@@ -33,6 +33,7 @@ class _MyHomePageState extends State<MyHomePage> {
   
   File _image;    
   String _uploadedFileURL;
+  var data;
   
   final databaseReference = Firestore.instance;
 
@@ -75,6 +76,7 @@ void getData() async {
       .getDocuments()
       .then((QuerySnapshot snapshot) {
     snapshot.documents.forEach((f) { 
+      data = f;
       print(f.data["link_setdata"]);
     } );
   });
@@ -109,7 +111,7 @@ void getData() async {
                : Container(),    
            _uploadedFileURL != null    
                ? Text(    
-                   _uploadedFileURL,     
+                   data,     
                  )    
                : Container(),    
          ],    
