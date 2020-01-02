@@ -48,15 +48,14 @@ class _MyHomePageState extends State<MyHomePage> {
    StorageReference storageReference = FirebaseStorage.instance    
        .ref()    
        .child('images/${Path.basename(_image.path)}}');    
-   StorageUploadTask uploadTask = storageReference.putFile(_image);    
-   await uploadTask.onComplete;    
-   print('File Uploaded');    
-   storageReference.getDownloadURL().then((fileURL) {  
+   await storageReference.putFile(_image).onComplete;       
+   await print('File Uploaded');    
+   await storageReference.getDownloadURL().then((fileURL) {  
      setState(() {    
-       _uploadedFileURL = fileURL;    
+       _uploadedFileURL = fileURL;
      });    
    });
-   print('File Uploaded and UPLOADED FILE URL'); 
+   await print('File Uploaded and UPLOADED FILE URL'); 
    
  }  
 
@@ -66,19 +65,17 @@ class _MyHomePageState extends State<MyHomePage> {
       .setData({
         'link_setdata': _uploadedFileURL
       });
-      print(_uploadedFileURL);
-      print('LINK UPLOAD DONE');
+      await print(_uploadedFileURL);
+      await print('LINK UPLOAD DONE');
 }
 
-void getData() {
-  databaseReference
+void getData() async {
+  await databaseReference
       .collection("images")
       .getDocuments()
       .then((QuerySnapshot snapshot) {
     snapshot.documents.forEach((f) { 
-      setState((){
-     _uploadedFileURL = f.data["link_setdata"];
-      });
+      print(f.data["link_setdata"]);
     } );
   });
 }
@@ -102,9 +99,9 @@ void getData() {
            _image != null    
                ? RaisedButton(    
                    child: Text('Upload File'),    
-                   onPressed: () {
-                      uploadFile();
-                      linkOfUploadedFile();
+                   onPressed: () async {
+                      await uploadFile();
+                      await linkOfUploadedFile();
                       getData();
                     },    
                    color: Colors.cyan,    
