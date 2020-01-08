@@ -31,6 +31,13 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   File _image;
+
+  String _imagesA = 'Images A';
+  String _imagesB = 'Images B';
+
+  String dropdownValue = 'Images A';
+
+  
   // String _uploadedFileURL;
   // var data;
 
@@ -47,13 +54,13 @@ class _MyHomePageState extends State<MyHomePage> {
   Future uploadFile() async {
     StorageReference storageReference = FirebaseStorage.instance
         .ref()
-        .child('images/${Path.basename(_image.path)}');
+        .child("$dropdownValue/${Path.basename(_image.path)}");
 
     await storageReference.putFile(_image).onComplete;
     await print('File Uploaded');
     await storageReference.getDownloadURL().then((fileURL) async {
       DocumentReference ref = await databaseReference
-          .collection("images")
+          .collection("$dropdownValue")
           .add({'link_setdata': fileURL});
 
       await print(ref.documentID);
@@ -76,11 +83,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void displayDataInConsole() async {
     await databaseReference
-        .collection("images")
+        .collection("$dropdownValue")
         .getDocuments()
         .then((QuerySnapshot snapshot) {
       snapshot.documents.forEach((f) {
-        print(f.data["link_setdata"]);
+        print('Backend $dropdownValue = ${f.data["link_setdata"]}');
       });
     });
   }
@@ -108,10 +115,24 @@ class _MyHomePageState extends State<MyHomePage> {
               },
               color: Colors.cyan,
             ),
-            SizedBox(
+            DropdownButton<String>(
+              value: dropdownValue,
+              icon: Icon(Icons.arrow_downward),
+              iconSize: 24,
+              elevation: 16,
+              style: TextStyle(color: Colors.deepPurple),
+              underline: Container(
+                height: 2,
+                color: Colors.deepPurpleAccent,
+              ),
+              onChanged: (String newValue) {
+                setState(() {
+                  dropdownValue = newValue;
+                  
+                SizedBox(
                 height: 500.0,
                 child: StreamBuilder<QuerySnapshot>(
-                  stream: Firestore.instance.collection('images').snapshots(),
+                  stream: Firestore.instance.collection(dropdownValue).snapshots(),
                   builder: (BuildContext context,
                       AsyncSnapshot<QuerySnapshot> snapshot) {
                     if (snapshot.hasError)
@@ -125,6 +146,40 @@ class _MyHomePageState extends State<MyHomePage> {
                               .map((DocumentSnapshot document) {
                             return Text(
                               document.data["link_setdata"],
+                            );
+                          }).toList(),
+                        );
+                    }
+                  },
+                ));
+
+                });
+              },
+              items: <String>['$_imagesA', '$_imagesB']
+                  .map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+            ),
+            SizedBox(
+                height: 500.0,
+                child: StreamBuilder<QuerySnapshot>(
+                  stream: Firestore.instance.collection('$dropdownValue').snapshots(),
+                  builder: (BuildContext context,
+                      AsyncSnapshot<QuerySnapshot> snapshot) {
+                    if (snapshot.hasError)
+                      return new Text('Error: ${snapshot.error}');
+                    switch (snapshot.connectionState) {
+                      case ConnectionState.waiting:
+                        return new Text('Loading...');
+                      default:
+                        return new ListView(
+                          children: snapshot.data.documents
+                              .map((DocumentSnapshot document) {
+                            return Text(
+                              'Backend $dropdownValue = ${document.data["link_setdata"]}',
                             );
                           }).toList(),
                         );
